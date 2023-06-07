@@ -13,8 +13,9 @@ features:
 - [x] glyph draw
 - [x] line draw
 - [x] block draw
-- [ ] font resize
-- [ ] font passed as struct
+- [x] font resize
+- [x] font passed as struct
+- [ ] rm core deps
 - [ ] colored text
   - [x] colored glyph
   - [x] colored line

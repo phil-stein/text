@@ -9,34 +9,25 @@
 
 #include <GLAD/glad.h>
 
+
 FT_Library  library;
-// FT_Face     face;
 
-int glyph_h = 0;  // rough estimate not acutal size
-int glyph_w = 0;  // rough estimate not acutal size
-
-char cur_font_path[FONT_PATH_MAX];
-char cur_font_name[FONT_NAME_MAX];
-int  cur_font_size = 0;
-
-// glyph glyph_pool[GLYPH_POOL_MAX];
-// int   glyph_pool_pos = 0;
-
-// ---- func decls ----
+/// ---- func decls ----
 INLINE glyph text_ft_bitmap_to_glyph(FT_Bitmap* b);
 
-// @TODO: load ascii and the use another glyph_pool for the buffered chars
-
-void text_load_font(const char* font_path, int font_size, font_t* font)
+// @TODO: doesnt completely clean font
+void text_load_font(const char* _font_path, int font_size, font_t* font)
 {
+  // copy before cleaning font
+  char font_path[FONT_PATH_MAX];
+  strcpy(font_path, _font_path);
+
   // -- cleanup --
-  FT_Done_Face(font->face);
-  // FT_Done_FreeType(library);
-  font->face = NULL;
-  // library = NULL;
-  font->pool_pos = 0; 
-  font_t tmp = FONT_INIT();
-  *font = tmp;
+  // FT_Done_Face(font->face);
+  // *font = (font_t)FONT_INIT();
+  // font->face = NULL;
+  // font->pool_pos = 0; 
+  FONT_RESET(font);
 
   // ---- font ----
   int error = 0;
@@ -44,6 +35,8 @@ void text_load_font(const char* font_path, int font_size, font_t* font)
   error = FT_Init_FreeType( &library );
   FREETYPE_ERR_CHECK(error, "error during library init.");
 
+  P_STR(font_path);
+  
   error = FT_New_Face(library, font_path, 0, &font->face);
   FREETYPE_ERR_CHECK(error, "error during face init.");
   
@@ -54,17 +47,21 @@ void text_load_font(const char* font_path, int font_size, font_t* font)
   error = FT_Set_Char_Size(
       font->face,     // handle to face object           
       0,              // char_width in 1/64th of points, 0: same as height  
+      // (font_size*64) *2,   // char_width test 
       font_size*64,   // char_height in 1/64th of points 
       x,              // horizontal device resolution  (dpi)  
       y );            // vertical device resolution    (dpi)
   FREETYPE_ERR_CHECK(error, "error during face sizing.");
 
-  glyph_w = font_size * 2;  
-  glyph_h = font_size * 4; // * 1.75f; // 14
-  font->gw = glyph_w;
-  font->gh = glyph_h;
+  font->gw = font_size * 2;
+  font->gh = font_size * 4;
 
-  strcpy(cur_font_path, font_path);
+  // -- load ascii --
+  for (int i = U_SPACE; i <= 127; ++i)
+  { text_make_glyph(i, font); }
+  // ----------------
+
+  strcpy(font->path, font_path);
   // get end of path / start of file name
   int pos = 0;
   for (int i = strlen(font_path) -1; i >= 0; --i)
@@ -75,14 +72,14 @@ void text_load_font(const char* font_path, int font_size, font_t* font)
   int cpy = 0;
   for (int i = pos; i < strlen(font_path) && i < FONT_NAME_MAX; ++i)
   {
-    cur_font_name[cpy++] = font_path[i];
+    font->name[cpy++] = font_path[i];
   }
-  cur_font_size = font_size;
+  font->name[cpy] = '\0';
   font->size    = font_size;
 
   PF("-> font loaded\n"); 
-  PF("  -> font-name: %s\n",   cur_font_name);
-  PF("  -> font-size: %d\n",   cur_font_size);
+  PF("  -> font-name: %s\n",   font->name);
+  PF("  -> font-size: %d\n",   font->size);
   PF("  -> font-glyphs: %d\n", (int)font->face->num_glyphs);
   PF("  -> has color: %s\n",   STR_BOOL(FT_HAS_COLOR(font->face)));
   PF("  -> is sfnt: %s\n",     STR_BOOL(FT_IS_SFNT(font->face)));
@@ -91,14 +88,13 @@ void text_load_font(const char* font_path, int font_size, font_t* font)
 }
 void text_set_font_size(int size, font_t* font)
 {
-  P_STR(cur_font_path);
-  text_load_font(cur_font_path, size, font);
+  P_STR(font->path);
+  text_load_font(font->path, size, font);
 }
 
 
 void text_cleanup()
 {
-  // FT_Done_Face(face);
   FT_Done_FreeType(library);
 }
 void text_free_font(font_t* font)
@@ -141,6 +137,7 @@ glyph* text_make_glyph(int code, font_t* font)
   
   if (font->face->glyph->format != FT_GLYPH_FORMAT_BITMAP)
   {
+    // FT_RENDER_MODE_NORMAL
     error = FT_Render_Glyph(font->face->glyph, FT_RENDER_MODE_NORMAL); // aliased 256 gaylevels
     FREETYPE_ERR_CHECK(error, "error rendering glyph.");
   }
@@ -176,15 +173,14 @@ glyph* text_make_glyph(int code, font_t* font)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)(2 * sizeof(f32)));
 
-  glyph g = text_ft_bitmap_to_glyph(&font->face->glyph->bitmap);
+  glyph g   = text_ft_bitmap_to_glyph(&font->face->glyph->bitmap);
   g.code    = code;
   g.advance = font->face->glyph->advance.x / 32; // / 64; // @UNCLEAR: should be 64
-  // ASSERT(glyph_pool_pos < GLYPH_POOL_MAX -1);
-  // glyph_pool[glyph_pool_pos++] = g; 
-  // glyph_pool[glyph_pool_pos -1].vao = vao;
+  g.vbo     = vbo;
+  g.vao     = vao;
+  
   ASSERT(font->pool_pos < FONT_POOL_MAX -1);
-  font->pool[font->pool_pos]       = g; 
-  font->pool[font->pool_pos++].vao = vao; 
+  font->pool[font->pool_pos++] = g; 
   
   return &font->pool[font->pool_pos -1];
 }
@@ -198,9 +194,4 @@ glyph* text_get_glyph(int code, font_t* font)
   return text_make_glyph(code, font);
 }
 
-const char* text_get_font(int* size)
-{
-  *size = cur_font_size;
-  return cur_font_name;
-}
 
