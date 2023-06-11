@@ -3,8 +3,8 @@
 
 simple text rendering library. <br>
 
-using: [FreeType](https://freetype.org/index.html)
-
+using:   [FreeType](https://freetype.org/index.html)
+example: [text editor](https://github.com/phil-stein/text-editor), [mooh game engine](https://github.com/phil-stein/mooh_engine)
 
 
 features:

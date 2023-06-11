@@ -3,20 +3,33 @@
 
 #include "text.h"
 #include "text_codes.h"
-#include <math/math_inc.h>
+#include "math/math_inc.h"
 
 // static to avoid duplication when including header multiple times
 // forced inline to always inline the functions
 #define TEXT_D_INLINE static inline __attribute((always_inline))
 
+typedef void (window_get_size_callback)(int* x, int* y);
 
-void text_draw_init(font_t* font);
+typedef void (txt_shader_use_callback)(u32);      
+typedef void (txt_shader_set_int_callback)(u32,  const char*, int);
+typedef void (txt_shader_set_vec2_callback)(u32, const char*, vec2); 
+typedef void (txt_shader_set_vec3_callback)(u32, const char*, vec3);
+
+// void text_draw_init(font_t* font);
+void text_draw_init(font_t* font, u32 _text_shader, u32 _img_shader, u32 _blank_tex,
+                    window_get_size_callback* _w_get_size_f,
+                    txt_shader_use_callback*      _s_use_f, 
+                    txt_shader_set_int_callback*  _s_set_int_f,
+                    txt_shader_set_vec2_callback* _s_set_vec2_f, 
+                    txt_shader_set_vec3_callback* _s_set_vec3_f);
 void text_draw_update();
 
 void text_draw_glyph_col(vec2 pos, glyph* g, rgbf color);
 TEXT_D_INLINE void text_draw_glyph(vec2 pos, glyph* g)
 { text_draw_glyph_col(pos, g, (float[3]){1, 1, 1}); }
 void text_draw_glyph_box(vec2 pos, glyph* g, rgbf color);
+
 void text_draw_img(vec2 pos, vec2 size, u32 tex, rgbf tint);
 void text_draw_quad(vec2 pos, vec2 size, rgbf color);
 

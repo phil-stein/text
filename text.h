@@ -1,11 +1,12 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include <global/global.h>
-#include <core/texture.h>
-#include <math/math_inc.h>
+#include "global/global.h"
+// #include "core/types/texture.h"
+#include "math/math_inc.h"
 
-#include <FREETYPE/ft2build.h>
+// #include "FREETYPE/ft2build.h"
+#include "ft2build.h"
 #include FT_FREETYPE_H
 
 

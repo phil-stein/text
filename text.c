@@ -1,14 +1,16 @@
 #include "text.h"
 #include "text_codes.h"
-#include <core/window.h>
-#include <math/math_inc.h>
+#include "core/window.h"
+#include "math/math_inc.h"
 
 #include <ctype.h>
 #include <wchar.h>  // tmp
 #include <locale.h> // tmp
 
-#include <GLAD/glad.h>
+#include "GLAD/glad.h"
 
+#include "FREETYPE/ft2build.h"
+#include FT_FREETYPE_H
 
 FT_Library  library;
 
