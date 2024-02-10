@@ -13,7 +13,7 @@ static int h = 0;  // screen height
 // @TODO: make not use text shader but u32  
 u32 text_shader;
 u32 img_shader;
-u32 blank_tex = 0;
+static u32 blank_tex = 0;
 
 bool glyph_box_act = false;
 

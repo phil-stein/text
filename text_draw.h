@@ -4,10 +4,12 @@
 #include "text.h"
 #include "text_codes.h"
 #include "math/math_inc.h"
+#include "global/global.h"
 
 // static to avoid duplication when including header multiple times
 // forced inline to always inline the functions
-#define TEXT_D_INLINE static inline __attribute((always_inline))
+// #define TEXT_D_INLINE static inline __attribute((always_inline))
+#define TEXT_D_INLINE   INLINE
 
 typedef void (window_get_size_callback)(int* x, int* y);
 
