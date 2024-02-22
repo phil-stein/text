@@ -36,8 +36,6 @@ void text_load_font(const char* _font_path, int font_size, font_t* font)
 
   error = FT_Init_FreeType( &library );
   FREETYPE_ERR_CHECK(error, "error during library init.");
-
-  P_STR(font_path);
   
   error = FT_New_Face(library, font_path, 0, &font->face);
   FREETYPE_ERR_CHECK(error, "error during face init.");
@@ -79,14 +77,15 @@ void text_load_font(const char* _font_path, int font_size, font_t* font)
   font->name[cpy] = '\0';
   font->size    = font_size;
 
-  PF("-> font loaded\n"); 
-  PF("  -> font-name: %s\n",   font->name);
-  PF("  -> font-size: %d\n",   font->size);
-  PF("  -> font-glyphs: %d\n", (int)font->face->num_glyphs);
-  PF("  -> has color: %s\n",   STR_BOOL(FT_HAS_COLOR(font->face)));
-  PF("  -> is sfnt: %s\n",     STR_BOOL(FT_IS_SFNT(font->face)));
-  PF("  -> scalable: %s\n",    STR_BOOL(FT_IS_SCALABLE(font->face)));
-  PF("  -> has kerning: %s\n", STR_BOOL(FT_HAS_KERNING(font->face)));
+  // P_STR(font_path);
+  // PF("-> font loaded\n"); 
+  // PF("  -> font-name: %s\n",   font->name);
+  // PF("  -> font-size: %d\n",   font->size);
+  // PF("  -> font-glyphs: %d\n", (int)font->face->num_glyphs);
+  // PF("  -> has color: %s\n",   STR_BOOL(FT_HAS_COLOR(font->face)));
+  // PF("  -> is sfnt: %s\n",     STR_BOOL(FT_IS_SFNT(font->face)));
+  // PF("  -> scalable: %s\n",    STR_BOOL(FT_IS_SCALABLE(font->face)));
+  // PF("  -> has kerning: %s\n", STR_BOOL(FT_HAS_KERNING(font->face)));
 }
 void text_set_font_size(int size, font_t* font)
 {
