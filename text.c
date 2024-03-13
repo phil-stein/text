@@ -1,4 +1,5 @@
 #include "text.h"
+#include "freetype/fttypes.h"
 #include "text_codes.h"
 #include "core/window.h"
 #include "math/math_inc.h"
@@ -49,8 +50,8 @@ void text_load_font(const char* _font_path, int font_size, font_t* font)
       0,              // char_width in 1/64th of points, 0: same as height  
       // (font_size*64) *2,   // char_width test 
       font_size*64,   // char_height in 1/64th of points 
-      x,              // horizontal device resolution  (dpi)  
-      y );            // vertical device resolution    (dpi)
+      (u32)x,         // horizontal device resolution  (dpi)  
+      (u32)y );       // vertical device resolution    (dpi)
   FREETYPE_ERR_CHECK(error, "error during face sizing.");
 
   font->gw = font_size * 2;
@@ -64,13 +65,13 @@ void text_load_font(const char* _font_path, int font_size, font_t* font)
   strcpy(font->path, font_path);
   // get end of path / start of file name
   int pos = 0;
-  for (int i = strlen(font_path) -1; i >= 0; --i)
+  for (int i = (int)strlen(font_path) -1; i >= 0; --i)
   {
     if (font_path[i] == '\\' || font_path[i] == '/')
     { pos = i +1; break; }
   } 
   int cpy = 0;
-  for (int i = pos; i < strlen(font_path) && i < FONT_NAME_MAX; ++i)
+  for (int i = pos; i < (int)strlen(font_path) && i < FONT_NAME_MAX; ++i)
   {
     font->name[cpy++] = font_path[i];
   }
@@ -119,7 +120,7 @@ INLINE glyph text_ft_bitmap_to_glyph(FT_Bitmap* b)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, b->width, b->rows, 0, GL_RED, GL_UNSIGNED_BYTE, b->buffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, (GLsizei)b->width, (GLsizei)b->rows, 0, GL_RED, GL_UNSIGNED_BYTE, b->buffer);
 
   return g;
 }
@@ -127,12 +128,12 @@ INLINE glyph text_ft_bitmap_to_glyph(FT_Bitmap* b)
 glyph* text_make_glyph(int code, font_t* font)
 {
   int error = 0;
-  int glyph_index = FT_Get_Char_Index(font->face, code); // unicode, utf-32
+  int glyph_index = (int)FT_Get_Char_Index(font->face, (FT_ULong)code); // unicode, utf-32
   if (glyph_index == code) { ERR("no charmap found."); }
   
   error = FT_Load_Glyph(
       font->face,         // handle to face object 
-      glyph_index,        // glyph index           
+      (u32)glyph_index,   // glyph index           
       FT_LOAD_DEFAULT | FT_LOAD_COLOR );  // load flags
   FREETYPE_ERR_CHECK(error, "error loading glyph.");
   
@@ -146,10 +147,10 @@ glyph* text_make_glyph(int code, font_t* font)
   // get_monitor_dpi(&x, &y); 
   int w, h;
   window_get_size(&w, &h);
-  f32 y1 = font->face->glyph->bitmap_top;        // top
-  f32 y0 = y1 - font->face->glyph->bitmap.rows;  // bottom, top - height
-  f32 x0 = font->face->glyph->bitmap_left;       // left
-  f32 x1 = x0 + font->face->glyph->bitmap.width; // right, left + width 
+  f32 y1 = (f32)font->face->glyph->bitmap_top;        // top
+  f32 y0 = y1 - (f32)font->face->glyph->bitmap.rows;  // bottom, top - height
+  f32 x0 = (f32)font->face->glyph->bitmap_left;       // left
+  f32 x1 = x0 + (f32)font->face->glyph->bitmap.width; // right, left + width 
   
   f32 verts[] = 
 	{ 
@@ -175,8 +176,8 @@ glyph* text_make_glyph(int code, font_t* font)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)(2 * sizeof(f32)));
 
   glyph g   = text_ft_bitmap_to_glyph(&font->face->glyph->bitmap);
-  g.code    = code;
-  g.advance = font->face->glyph->advance.x / 32; // / 64; // @UNCLEAR: should be 64
+  g.code    = (u32)code;
+  g.advance = (u32)font->face->glyph->advance.x / 32; // / 64; // @UNCLEAR: should be 64
   g.vbo     = vbo;
   g.vao     = vao;
   
@@ -190,7 +191,7 @@ glyph* text_get_glyph(int code, font_t* font)
 {
   for (int i = 0; i < font->pool_pos; ++i)
   {
-    if (font->pool[i].code == code) { return &font->pool[i]; }
+    if (font->pool[i].code == (u32)code) { return &font->pool[i]; }
   }
   return text_make_glyph(code, font);
 }

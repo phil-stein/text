@@ -104,8 +104,8 @@ void text_draw_glyph_col(vec2 pos, glyph* g, rgbf color)
   // ---- shader & draw call -----	  
   vec2 _pos;
   vec2_copy(pos, _pos);
-  _pos[0] -= w; 
-  _pos[1] += h; 
+  _pos[0] -= (f32)w; 
+  _pos[1] += (f32)h; 
   _pos[0] *= 0.5f;
   _pos[1] *= 0.5f;
   
@@ -138,14 +138,14 @@ void text_draw_glyph_box(vec2 pos, glyph* g, rgbf color)
   
   vec2 _pos;
   vec2_copy(pos, _pos);
-  _pos[0] -= w; // * 0.5f;
-  _pos[1] += h; // * 0.5f;
+  _pos[0] -= (f32)w; // * 0.5f;
+  _pos[1] += (f32)h; // * 0.5f;
   _pos[0] *= 0.5f;
   _pos[1] *= 0.5f;
   vec2 _size;
   vec2_copy(VEC2(1), _size);
-  _size[0] /= w;
-  _size[1] /= h;
+  _size[0] /= (f32)w;
+  _size[1] /= (f32)h;
   vec2_mul_f(_size, 2, _size); 
   
   txt_shader_use_f(text_shader);
@@ -178,8 +178,8 @@ void text_draw_img(vec2 pos, vec2 size, u32 tex, rgbf tint)
   // ============================
   // _pos[0] = 2 * (_pos[0] / w) -1;
   // _pos[1] = 2 * (_pos[1] / h) +1;
-  _pos[0] -= w; 
-  _pos[1] += h;
+  _pos[0] -= (f32)w; 
+  _pos[1] += (f32)h;
   vec2_mul_f(_pos, 0.25f, _pos);
  
   float right  = _pos[0] + size[0] * 0.5f;
@@ -236,14 +236,14 @@ void text_draw_line_col(vec2 pos, int* g, int g_len, rgbf color, font_t* font)
   {
     glyph* _g = text_get_glyph(g[i], font);
     // just for debug
-    if(_pos[0] + (g_w*2) >= w * 2)
-    { _pos[1] -= g_h; _pos[0] = 0; }
+    if(_pos[0] + (f32)(g_w*2) >= (f32)(w * 2))
+    { _pos[1] -= (f32)g_h; _pos[0] = 0.0f; }
      
     if (glyph_box_act)
     { text_draw_glyph_box(_pos, _g, VEC3_XYZ(1, 0, 1)); }
      
     text_draw_glyph_col(_pos, _g, color); 
-    _pos[0] += _g->advance;
+    _pos[0] += (f32)_g->advance;
   }
 }
 void text_line_pos(int _g, vec2 pos, int* g, int g_len, font_t* font)
@@ -255,11 +255,11 @@ void text_line_pos(int _g, vec2 pos, int* g, int g_len, font_t* font)
   for(int i = 0; i < g_len; ++i)
   {
     // just for debug
-    if(pos[0] + (g_w*2) >= w * 2)
-    { pos[1] -= g_h; pos[0] = 0; }
+    if(pos[0] + (f32)(g_w*2) >= (f32)(w * 2))
+    { pos[1] -= (f32)g_h; pos[0] = 0.0f; }
      
     if (i == _g) { break; }
-    pos[0] += text_get_glyph(g[i], font)->advance;
+    pos[0] += (f32)text_get_glyph(g[i], font)->advance;
   }
 }
 
@@ -273,7 +273,7 @@ void text_draw_block(vec2 pos, int* g, int g_len, font_t* font)
   vec2 _pos;
   vec2_copy(pos, _pos);
   
-  vec2_add(_pos, VEC2_Y(-g_h), _pos); // window bar on top
+  vec2_add(_pos, VEC2_Y((f32)-g_h), _pos); // window bar on top
   float x = _pos[0];
 
   // vec2 size = VEC2_INIT(0.001f);
@@ -287,17 +287,17 @@ void text_draw_block(vec2 pos, int* g, int g_len, font_t* font)
     if(g[i] == U_CR)  // 0x0D: '\n', carriage return
     { 
       // text_draw_glyph_box(pos, g_full, RGB_F(0, 1, 1));
-      _pos[1] -= g_h; _pos[0] = x; continue; 
+      _pos[1] -= (f32)g_h; _pos[0] = x; continue; 
     }
     
-    if(pos[0] + (g_w*2) >= w * 2)
-    { _pos[1] -= g_h; _pos[0] = x; }
+    if(pos[0] + (f32)(g_w*2) >= (f32)(w * 2))
+    { _pos[1] -= (f32)g_h; _pos[0] = x; }
     
     if (glyph_box_act)
     { text_draw_glyph_box(_pos, _g, VEC3_XYZ(1, 0, 1)); }
     
     text_draw_glyph(_pos, _g); 
-    _pos[0] += _g->advance;
+    _pos[0] += (f32)_g->advance;
   }
 }
 void text_block_pos(int _g, vec2 pos, int* g, int g_len, font_t* font)
@@ -307,22 +307,22 @@ void text_block_pos(int _g, vec2 pos, int* g, int g_len, font_t* font)
   int g_w = font->gw;
   int g_h = font->gh;
 
-  vec2_copy(VEC2_Y(-g_h), pos); // window bar on top
+  vec2_copy(VEC2_Y((f32)-g_h), pos); // window bar on top
   // vec2 size = VEC2_INIT(0.001f);
   for(int i = 0; i < g_len; ++i)
   {
     if(g[i] == U_EOF || g[i] == U_NULL)
     { break; }
     
-    if(pos[0] + (g_w*2) >= w * 2)
-    { pos[1] -= g_h; pos[0] = 0; }
+    if(pos[0] + (f32)(g_w*2) >= (f32)(w * 2))
+    { pos[1] -= (f32)g_h; pos[0] = 0.0f; }
     
     if (i == _g) { break; }
     
-    pos[0] += text_get_glyph(g[i], font)->advance;
+    pos[0] += (f32)text_get_glyph(g[i], font)->advance;
     
     if(g[i] == U_CR)  // 0x0D: '\n', carriage return
-    { pos[1] -= g_h; pos[0] = 0; }
+    { pos[1] -= (f32)g_h; pos[0] = 0; }
   }
 }
 
