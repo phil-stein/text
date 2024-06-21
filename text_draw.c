@@ -5,6 +5,7 @@
 // #include <core/renderer.h> // tmp
 
 #include "GLAD/glad.h"
+#include "math/math_vec3.h"
 
 
 static int w = 0;  // screen width
@@ -160,6 +161,43 @@ void text_draw_glyph_box(vec2 pos, glyph* g, rgbf color)
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	
 }
+// @TODO:
+// void text_draw_glyph_col_3d(vec3 pos, vec3 scl, vec3 rot, glyph* g, rgbf color)
+// {
+//   // -- gl state --
+//   glEnable(GL_BLEND);
+//   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//   
+//   window_get_size_f(&w, &h);
+// 	   
+//   // ---- shader & draw call -----	  
+//   vec2 _pos;
+//   vec2_copy(pos, _pos);
+//   
+//   _pos[0] -= (f32)w; 
+//   _pos[1] += (f32)h; 
+//   _pos[0] *= 0.5f;
+//   _pos[1] *= 0.5f;
+//   
+//   vec2 _size;
+//   vec2_copy(VEC2(1), _size);
+//   _size[0] /= (float)w;
+//   _size[1] /= (float)h;
+//   vec2_mul_f(_size, 2, _size);
+//   
+//   txt_shader_use_f(text_shader);
+// 
+// 	glActiveTexture(GL_TEXTURE0);
+// 	glBindTexture(GL_TEXTURE_2D, g->tex); 
+// 	txt_shader_set_int_f(text_shader, "tex", 0);
+//   txt_shader_set_vec3_f(text_shader, "tint", color);
+//   txt_shader_set_vec2_f(text_shader, "pos", _pos);
+//   txt_shader_set_vec2_f(text_shader, "size", _size);
+// 		
+//   glBindVertexArray(g->vao);
+// 	glDrawArrays(GL_TRIANGLES, 0, 6);
+// 	
+// }
 void text_draw_img(vec2 pos, vec2 size, u32 tex, rgbf tint)
 {
   // -- gl state --
